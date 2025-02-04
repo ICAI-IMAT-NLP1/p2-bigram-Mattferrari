@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 
 def load_and_preprocess_data(
-    filepath: str, start_token: str = "!", end_token: str = "."
+    filepath: str, start_token: str = "<S>", end_token: str = "<E>"
 ) -> List[Tuple[str, str]]:
     """
     Load text from a file and preprocess them into bigrams with specified start and end tokens.
@@ -30,8 +30,14 @@ def load_and_preprocess_data(
         lines: List[str] = file.read().splitlines()
 
     # TODO
-    bigrams: List[Tuple[str, str]] = None
 
+    bigrams: List[Tuple[str, str]] = []
+    for line in lines:
+        line = " ".join(line.split()[:-2]).lower()
+        line = start_token + line + end_token
+        for i in range(len(line)):
+            if i < len(line)-1:
+                bigrams.append((line[i], line[i+1]))
     return bigrams
 
 
@@ -49,7 +55,8 @@ def char_to_index(alphabet: str, start_token: str, end_token: str) -> Dict[str, 
     """
     # Create a dictionary with start token at the beginning and end token at the end
     # TODO
-    char_to_idx: Dict[str, int] = None
+    expanded_alphabet = start_token + alphabet + end_token
+    char_to_idx: Dict[str, int] = {ch: idx for idx, ch in enumerate(expanded_alphabet)}
 
     return char_to_idx
 
@@ -66,7 +73,7 @@ def index_to_char(char_to_index: Dict[str, int]) -> Dict[int, str]:
     """
     # Reverse the char_to_index mapping
     # TODO
-    idx_to_char: Dict[int, str] = None
+    idx_to_char: Dict[int, str] = {char_to_index[char]: char for char in char_to_index.keys()}
 
     return idx_to_char
 
@@ -93,10 +100,13 @@ def count_bigrams(
 
     # Initialize a 2D tensor for counting bigrams
     # TODO
-    bigram_counts: torch.Tensor = None
+    
+    
 
     # Iterate over each bigram and update the count in the tensor
     # TODO
+    
+    bigram_counts: torch.Tensor = torch.tensor([[bigrams.count((i,j)) for j in char_to_idx] for i in char_to_idx])
 
     return bigram_counts
 
